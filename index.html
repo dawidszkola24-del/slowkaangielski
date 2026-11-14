@@ -237,5 +237,17 @@ function generateTest(){
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 refresh();changeRole();
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://dnbqhrqganreclrjcunm.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY = "WKLEJ_TUTAJ_SWÓJ_KLUCZ";
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+</script>
 </body>
 </html>

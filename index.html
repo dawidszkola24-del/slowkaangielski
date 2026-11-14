@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SŁÓWKAAngielski</title>
+<style>
+:root{--navy:#142b55;--blue:#2875c7;--bg:#f4f7fb;--line:#dce5ef}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font:16px system-ui;color:#203047}header{background:linear-gradient(110deg,#142b55,#2875c7);color:white;padding:25px max(18px,calc((100% - 1050px)/2));font-size:27px;font-weight:900}
+header span{color:#ffe18a}.wrap{max-width:1050px;margin:24px auto;padding:0 16px}nav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+button{border:0;border-radius:9px;background:#173866;color:white;padding:10px 14px;cursor:pointer;font-weight:650}button.alt{background:#e4edf8;color:#173866}button.del{background:#a83232}
+.card{background:white;border:1px solid var(--line);border-radius:14px;padding:18px;margin:12px 0}h2{color:#173866}
+input,select{padding:10px;border:1px solid #bdcddd;border-radius:8px;font:inherit;width:100%;margin:5px 0 12px}
+label{font-weight:650}table{width:100%;border-collapse:collapse}td,th{text-align:left;border-bottom:1px solid var(--line);padding:9px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.hide{display:none}.q{font-size:25px;font-weight:800;margin:14px 0}.hint{color:#65758a}
+.notice{background:#fff5d9;border:1px solid #ecd38d;padding:12px;border-radius:9px}
+@media print{nav,button,.no-print{display:none!important}body{background:white}}
+</style></head>
+<body>
+<header>📘 SŁÓWKA<span>Angielski</span></header>
+<main class="wrap">
+<h1>Pracownia języka angielskiego</h1>
+<div class="notice"><b>Ważne:</b> To prosta wersja demonstracyjna działająca w przeglądarce. Dane zapisują się lokalnie na tym urządzeniu. Nie ma jeszcze bezpiecznych kont uczniów/nauczycieli ani wspólnej bazy. Nie używaj prawdziwych danych uczniów, dopóki nie skonfigurujemy backendu i logowania.</div>
+<nav>
+<button data-tab="learn">Ćwiczenia</button><button data-tab="verbs">3 formy</button><button data-tab="manage">Zarządzanie</button><button data-tab="grades">Oceny</button><button data-tab="tests">Kartkówka / PDF</button>
+</nav>
+<section id="learn" class="pane card"><h2>Słówka</h2><div class="grid"><div><label>Dodaj słówko – polski</label><input id="pl" placeholder="dom"><label>Angielski</label><input id="en" placeholder="house"><button id="addword">Dodaj słówko</button></div><div><label>Kierunek</label><select id="direction"><option value="pl">Polski → Angielski</option><option value="en">Angielski → Polski</option></select><div class="q" id="prompt">Kliknij „Losuj”.</div><input id="answer" placeholder="Twoja odpowiedź"><button id="check">Sprawdź</button> <button class="alt" id="draw">Losuj</button><p id="feedback"></p></div></div><div id="wordlist"></div></section>
+<section id="verbs" class="pane card hide"><h2>Czasowniki nieregularne – 3 formy</h2><div class="grid"><div><label>Infinitive</label><input id="v1" placeholder="go"><label>Past Simple</label><input id="v2" placeholder="went"><label>Past Participle</label><input id="v3" placeholder="gone"><button id="addverb">Dodaj czasownik</button></div><div><div class="q" id="verbprompt">Wylosuj czasownik</div><label>Past Simple</label><input id="va2"><label>Past Participle</label><input id="va3"><button id="verbcheck">Sprawdź</button> <button class="alt" id="verbdraw">Losuj</button><p id="verbfeedback"></p></div></div><div id="verblist"></div></section>
+<section id="manage" class="pane card hide"><h2>Klasy i uczniowie – lista demonstracyjna</h2><label>Dodaj klasę (dowolna nazwa)</label><input id="classname" placeholder="Maturalna Podstawa / 8A"><button id="addclass">Dodaj klasę</button><div id="classlist"></div><hr><label>Imię i nazwisko ucznia</label><input id="studentname"><label>Klasa</label><select id="studentclass"></select><button id="addstudent">Dodaj ucznia</button><div id="students"></div></section>
+<section id="grades" class="pane card hide"><h2>Dziennik ocen – demonstracja</h2><label>Uczeń</label><select id="gradewho"></select><label>Kategoria</label><input id="category" value="Słówka"><label>Ocena (np. 4+, 3-, +, -)</label><input id="gradevalue"><label>Waga</label><input id="weight" type="number" value="1" min="0" step=".5"><button id="addgrade">Dodaj ocenę</button><div id="gradelist"></div></section>
+<section id="tests" class="pane card hide"><h2>Prosty arkusz do druku</h2><label>Tytuł</label><input id="testtitle" value="Kartkówka – język angielski"><label>Grupa</label><select id="group"><option>A</option><option>B</option></select><button id="printtest">Przygotuj arkusz i drukuj / Zapisz jako PDF</button><p class="hint">W oknie drukowania wybierz „Zapisz jako PDF”.</p></section>
+</main>
+<script>
+const $=x=>document.getElementById(x),get=(k,d)=>{try{return JSON.parse(localStorage.getItem('sa_'+k))??d}catch{return d}},put=(k,v)=>localStorage.setItem('sa_'+k,JSON.stringify(v));
+let words=get('words',[{pl:'dom',en:'house'},{pl:'książka',en:'book'},{pl:'szkoła',en:'school'}]),verbs=get('verbs',[{a:'go',b:'went',c:'gone'},{a:'write',b:'wrote',c:'written'}]),classes=get('classes',[]),students=get('students',[]),grades=get('grades',[]),cw=null,cv=null;
+const norm=s=>String(s||'').trim().toLocaleLowerCase();
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function save(){put('words',words);put('verbs',verbs);put('classes',classes);put('students',students);put('grades',grades)}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.pane').forEach(p=>p.classList.add('hide'));$(b.dataset.tab).classList.remove('hide')});
+function renderWords(){$('wordlist').innerHTML='<h3>Lista słówek</h3><table><tr><th>Polski</th><th>Angielski</th><th></th></tr>'+words.map((w,i)=>`<tr><td>${esc(w.pl)}</td><td>${esc(w.en)}</td><td><button class="del" onclick="removeWord(${i})">Usuń</button></td></tr>`).join('')+'</table>';draw()}
+window.removeWord=i=>{if(confirm('Usunąć słówko?')){words.splice(i,1);save();renderWords()}};
+function draw(){cw=words.length?words[Math.floor(Math.random()*words.length)]:null;$('prompt').textContent=cw?cw[$('direction').value]:'Dodaj słówka';$('answer').value='';$('feedback').textContent=''}
+$('addword').onclick=()=>{if($('pl').value.trim()&&$('en').value.trim()){words.push({pl:$('pl').value.trim(),en:$('en').value.trim()});$('pl').value=$('en').value='';save();renderWords()}};
+$('draw').onclick=draw;$('direction').onchange=draw;$('check').onclick=()=>{if(!cw)return;let target=$('direction').value==='pl'?cw.en:cw.pl;$('feedback').textContent=norm(target)===norm($('answer').value)?'✓ Poprawnie!':'Niepoprawnie. Odpowiedź: '+target};
+function renderVerbs(){$('verblist').innerHTML='<h3>Lista czasowników</h3><table><tr><th>Infinitive</th><th>Past Simple</th><th>Past Participle</th><th></th></tr>'+verbs.map((v,i)=>`<tr><td>${esc(v.a)}</td><td>${esc(v.b)}</td><td>${esc(v.c)}</td><td><button class="del" onclick="removeVerb(${i})">Usuń</button></td></tr>`).join('')+'</table>';verbDraw()}
+window.removeVerb=i=>{if(confirm('Usunąć czasownik?')){verbs.splice(i,1);save();renderVerbs()}};
+$('addverb').onclick=()=>{let a=$('v1').value.trim(),b=$('v2').value.trim(),c=$('v3').value.trim();if(a&&b&&c){verbs.push({a,b,c});$('v1').value=$('v2').value=$('v3').value='';save();renderVerbs()}};
+function verbDraw(){cv=verbs.length?verbs[Math.floor(Math.random()*verbs.length)]:null;$('verbprompt').textContent=cv?cv.a:'Dodaj czasowniki';$('va2').value=$('va3').value='';$('verbfeedback').textContent=''}
+$('verbdraw').onclick=verbDraw;$('verbcheck').onclick=()=>{if(cv)$('verbfeedback').textContent=norm($('va2').value)===norm(cv.b)&&norm($('va3').value)===norm(cv.c)?'✓ Dobrze!':`Poprawnie: ${cv.b} – ${cv.c}`};
+function renderPeople(){$('classlist').innerHTML=classes.map((c,i)=>`<p>${esc(c)} <button class="del" onclick="removeClass(${i})">Usuń klasę</button></p>`).join('');$('studentclass').innerHTML=classes.map(c=>`<option>${esc(c)}</option>`).join('');$('students').innerHTML='<h3>Uczniowie</h3>'+students.map((s,i)=>`<p>${esc(s.name)} (${esc(s.cls)}) <button class="del" onclick="removeStudent(${i})">Usuń konto</button></p>`).join('');$('gradewho').innerHTML=students.map((s,i)=>`<option value="${i}">${esc(s.name)}</option>`).join('')}
+window.removeClass=i=>{if(confirm('Usunąć klasę i uczniów tej klasy?')){let c=classes[i];classes.splice(i,1);let gone=students.filter(s=>s.cls===c);students=students.filter(s=>s.cls!==c);grades=grades.filter(g=>g.cls!==c);save();renderPeople();renderGrades()}};
+window.removeStudent=i=>{let s=students[i];if(confirm('Usunąć ucznia i jego oceny?')){students.splice(i,1);grades=grades.filter(g=>g.name!==s.name||g.cls!==s.cls);save();renderPeople();renderGrades()}};
+$('addclass').onclick=()=>{let c=$('classname').value.trim();if(c&&!classes.includes(c)){classes.push(c);$('classname').value='';save();renderPeople()}};
+$('addstudent').onclick=()=>{if($('studentname').value.trim()&&$('studentclass').value){students.push({name:$('studentname').value.trim(),cls:$('studentclass').value});$('studentname').value='';save();renderPeople()}};
+$('addgrade').onclick=()=>{let s=students[+$('gradewho').value];if(s&&$('gradevalue').value.trim()){grades.push({name:s.name,cls:s.cls,cat:$('category').value,g:$('gradevalue').value,w:+$('weight').value||1});save();renderGrades()}};
+function renderGrades(){$('gradelist').innerHTML='<table><tr><th>Uczeń</th><th>Kategoria</th><th>Ocena</th><th>Waga</th><th></th></tr>'+grades.map((g,i)=>`<tr><td>${esc(g.name)}</td><td>${esc(g.cat)}</td><td>${esc(g.g)}</td><td>${g.w}</td><td><button class="del" onclick="removeGrade(${i})">Usuń</button></td></tr>`).join('')+'</table>'}
+window.removeGrade=i=>{if(confirm('Usunąć ocenę?')){grades.splice(i,1);save();renderGrades()}};
+$('printtest').onclick=()=>{let title=esc($('testtitle').value),group=$('group').value;let w=window.open('','_blank');if(!w){alert('Zezwól na wyskakujące okna.');return}w.document.write(`<html lang="pl"><meta charset="utf-8"><title>${title}</title><style>body{font:16px Arial;margin:22mm}li{margin:25px 0}</style><h1>SŁÓWKAAngielski</h1><h2>${title}</h2><p>Imię i nazwisko: ...........................................</p><p>Data: ................ Klasa: ................ Grupa: ${group}</p><ol>${words.slice(0,10).map(x=>`<li>Przetłumacz na angielski: <b>${esc(x.pl)}</b><p>............................................................</p></li>`).join('')}</ol><h2>Karta nauczyciela</h2><p>Punkty: .... / .... &nbsp; Procent: ....% &nbsp; Ocena: ....</p><p>Podpis nauczyciela: ................................</p><script>onload=()=>print()<\/script></html>`);w.document.close()};
+renderWords();renderVerbs();renderPeople();renderGrades();
+</script></body></html>
